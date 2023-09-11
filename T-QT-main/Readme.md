@@ -1,0 +1,1 @@
+# This project needs to run in VS code by itself if you are trying to open the parent folder in VS Code it might not recognize this as a PlatformIO project.

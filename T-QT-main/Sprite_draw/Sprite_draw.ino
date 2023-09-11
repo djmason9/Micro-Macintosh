@@ -71,8 +71,8 @@ void loop(void)
 {
 
   chooseImage(startup, 5000, 800, startupframesNumber);
+
   chooseImage(hello, 5000, 500, helloframesNumber);
-  // chooseImage(toast, 1000, 1000, toastframesNumber);
 
   delay(3000);
   tft.fillScreen(TFT_BLACK);
@@ -98,12 +98,12 @@ void loadingScreen()
   tft.setTextColor(TFT_CYAN);
   tft.println(F("bitcowsSticker.com"));
   delay(500);
+
+  tft.setTextColor(TFT_WHITE);
   tft.println(F("my fonting turling dromes, and hooptiously"));
   delay(100);
   tft.println(F("drangle me."));
   delay(100);
-
-  tft.setTextColor(TFT_WHITE);
   tft.println(F("Or I will rend thee."));
   delay(100);
   tft.println(F("All your bases are"));
@@ -162,8 +162,8 @@ int16_t dashline_n = h / dashline_h;
 int16_t dashline_x = w / 2 - 1;
 int16_t dashline_y = dashline_h / 2;
 
-int16_t lscore = 12;
-int16_t rscore = 4;
+int16_t lscore = 0;
+int16_t rscore = 0;
 
 String players = "DJM        RJF";
 
@@ -171,7 +171,17 @@ void initgame()
 {
 
   target_y = 0;
-  
+  ball_x = 2;
+  ball_y = 2;
+  oldball_x = 2;
+  oldball_y = 2;
+
+  ball_dx = 1;
+  ball_dy = 1;
+
+  lscore = 0;
+  rscore = 0;
+
   lpaddle_y = random(0, h - paddle_h);
   rpaddle_y = random(0, h - paddle_h);
 
@@ -183,6 +193,8 @@ void initgame()
   // Print the concatenated string to the serial monitor
   Serial.println("Init Game");
   Serial.println(output);
+
+  score();
 
   calc_target_y();
 
@@ -308,10 +320,10 @@ void calc_target_y()
     target_y = h - (y % h);
   }
 
-  Serial.print("target_y: ");
-  Serial.println(target_y);
-  Serial.print("target_x: ");
-  Serial.println(target_x);
+  // Serial.print("target_y: ");
+  // Serial.println(target_y);
+  // Serial.print("target_x: ");
+  // Serial.println(target_x);
 }
 
 void ball()
@@ -347,13 +359,18 @@ void ball()
   tft.fillRect(ball_x, ball_y, ball_w, ball_h, TFT_WHITE);
   oldball_x = ball_x;
   oldball_y = ball_y;
+
+  // Serial.print("ball_x: ");
+  // Serial.println(ball_x);
+  // Serial.print("ball_y: ");
+  // Serial.println(ball_y);
 }
 
 void playPong()
 {
   initgame();
 
-  for (size_t i = 0; i < 4000; i++)
+  for (size_t i = 0; i < 20000; i++)
   {
     delay(dly);
     lpaddle();
@@ -364,10 +381,57 @@ void playPong()
 
     ball();
 
+    if (i % 2000 == 0 && i != 0)
+    {
+
+      // Generate a random number (0 or 1)
+      int randomValue = random(2);
+
+      if (randomValue == 0)
+        rscore++;
+      else
+        lscore++;
+
+      changescore();
+    }
+
     tft.setTextDatum(TC_DATUM);
     tft.setTextColor(TFT_RED);
     tft.drawString(players, w / 2, 2, 2);
+
+    score();
   }
   Serial.println("Done Playing");
   Serial.println("************************** ");
+}
+
+void score()
+{
+  int lscore_x, rscore_x;
+
+  tft.setTextDatum(TC_DATUM);
+  tft.setTextColor(TFT_YELLOW);
+  tft.setTextSize(1);
+
+  char lScoreStr[10]; // Assuming a reasonable buffer size
+  sprintf(lScoreStr, "%d", lscore);
+  tft.drawString(lScoreStr, w - 28, 16, 2);
+
+  char rScoreStr[10]; // Assuming a reasonable buffer size
+  sprintf(rScoreStr, "%d", rscore);
+  tft.drawString(rScoreStr, 25, 16, 2);
+}
+
+void changescore()
+{
+  score();
+
+  tft.fillRect(10, (h / 2) - 11, w-13, 41, TFT_YELLOW);
+  tft.fillRect(11, (h / 2) - 10, w-15, 39, TFT_BLACK);
+
+  tft.setTextDatum(TC_DATUM);
+  tft.setTextColor(TFT_RED);
+  tft.drawString("POINT!", w / 2, h / 2, 4);
+  delay(500);
+  tft.fillScreen(TFT_BLACK);
 }
